@@ -25,11 +25,20 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.lifecycleScope
+import com.google.android.fhir.NetworkConfiguration
 import com.google.android.fhir.sync.CurrentSyncJobStatus
 import org.openmrs.android.fhir.databinding.ActivityMainBinding
 import kotlinx.coroutines.launch
+import okhttp3.Call
+import okhttp3.Callback
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.RequestBody
+import okhttp3.Response
 import org.openmrs.android.fhir.viewmodel.MainActivityViewModel
 import timber.log.Timber
+import java.io.IOException
 
 const val MAX_RESOURCE_COUNT = 20
 
@@ -47,6 +56,36 @@ class MainActivity : AppCompatActivity() {
     observeLastSyncTime()
     observeSyncState()
     viewModel.updateLastSyncTimestamp()
+
+    val networkConfiguration: NetworkConfiguration = FhirApplication.networkConfiguration(application.applicationContext)
+
+
+    // Set session location
+    val client = OkHttpClient()
+    val url = "http://10.0.2.2:8080/openmrs/ws/rest/v1/session"
+    val json = """{"sessionLocation": "2d9378e3-b99f-42af-a109-f68395141bf3"}"""
+    val requestBody = RequestBody.create("application/json; charset=utf-8".toMediaType(), json)
+    val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization", "Bearer " + LoginRepository.getInstance(applicationContext).getAccessToken())
+            .addHeader("Cookie", networkConfiguration.cookie)
+            .post(requestBody)
+            .build()
+
+    client.newCall(request).enqueue(object : Callback {
+      override fun onFailure(call: Call, e: IOException) {
+        e.printStackTrace()
+      }
+
+      override fun onResponse(call: Call, response: Response) {
+        response.use {
+          if (!response.isSuccessful) throw IOException("Unexpected code $response")
+          println(response.body?.string())
+        }
+      }
+    })
+
+
   }
 
   override fun onBackPressed() {

@@ -29,9 +29,13 @@ import com.google.android.fhir.datacapture.validation.Invalid
 import com.google.android.fhir.datacapture.validation.QuestionnaireResponseValidator
 import java.util.UUID
 import kotlinx.coroutines.launch
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Extension
+import org.hl7.fhir.r4.model.Identifier
 import org.hl7.fhir.r4.model.Patient
 import org.hl7.fhir.r4.model.Questionnaire
 import org.hl7.fhir.r4.model.QuestionnaireResponse
+import org.hl7.fhir.r4.model.Reference
 import org.openmrs.android.fhir.FhirApplication
 import org.openmrs.android.fhir.fragments.AddPatientFragment
 
@@ -84,6 +88,19 @@ class AddPatientViewModel(application: Application, private val state: SavedStat
       }
       val patient = entry.resource as Patient
       patient.id = generateUuid()
+
+
+      val identifierType = CodeableConcept().apply { text = "HSU ID" }
+      val identifier = Identifier();
+      identifier.value = "1111-1"
+      identifier.type = identifierType
+      patient.setIdentifier(mutableListOf(identifier));
+
+      val ref = Reference("Location/2d9378e3-b99f-42af-a109-f68395141bf3")
+      ref.setType("Location")
+      val ext = Extension("http://fhir.openmrs.org/ext/patient/identifier#location", ref);
+      patient.identifier.get(0).addExtension(ext);
+
       fhirEngine.create(patient)
       isPatientSaved.value = true
     }

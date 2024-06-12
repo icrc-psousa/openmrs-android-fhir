@@ -32,7 +32,12 @@ import java.util.*
 
 class TimestampBasedDownloadWorkManagerImpl(private val dataStore: DemoDataStore) : DownloadWorkManager {
   private val resourceTypeList = ResourceType.values().map { it.name }
-  private val urls = LinkedList(listOf("Patient?_sort=_lastUpdated"))
+  //private val urls = LinkedList(listOf("Patient?_sort=_lastUpdated"))
+  private val urls = LinkedList(listOf(
+          "Patient?_lastUpdated=gt2024-05-20T00:00:00.000+01:00&address-city=GENEVA&_sort=_lastUpdated",
+          "Encounter?_lastUpdated=gt2024-06-06T00:00:00.000+01:00&_sort=_lastUpdated",
+          //"Observation?_lastUpdated=gt2024-04-16T00:00:00.000+01:00&_sort=_lastUpdated"
+  ))
 
   override suspend fun getNextRequest(): DownloadRequest? {
     var url = urls.poll() ?: return null
@@ -135,7 +140,8 @@ private fun affixLastUpdatedTimestamp(url: String, lastUpdated: String): String 
     downloadUrl = url
   }
 
-  return downloadUrl
+  return url
+  //return downloadUrl
 }
 
 private fun Date.toTimeZoneString(): String {

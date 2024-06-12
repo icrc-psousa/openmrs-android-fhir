@@ -36,7 +36,7 @@ class FhirSyncWorker(appContext: Context, workerParams: WorkerParameters) :
   }
 
 
-  override fun getUploadStrategy(): UploadStrategy = UploadStrategy.AllChangesSquashedBundlePut
+  override fun getUploadStrategy(): UploadStrategy = UploadStrategy.AllChangesIndividualResourcesPut
 
   override fun getConflictResolver() = AcceptLocalConflictResolver
 
